@@ -1,0 +1,5 @@
+package com.connect_azul.controller;
+
+public class UserController {
+    
+}
