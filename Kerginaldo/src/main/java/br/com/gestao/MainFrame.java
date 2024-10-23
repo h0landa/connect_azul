@@ -22,7 +22,7 @@ public class MainFrame extends JFrame {
     private static final Color TEXT_COLOR = new Color(44, 62, 80); // Dark Blue Gray
     
     public MainFrame() {
-        setTitle("Sistema de Gestão de Profissionais e Serviços");
+        setTitle("Sistema de Kerginaldo @ Uninassau");
         setSize(900, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);

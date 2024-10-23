@@ -8,14 +8,14 @@ public class Profissional {
     private String nome;
     private String especialidade;
     private double comissao;
-    private List<Servico> servicos; // Lista de serviços associados
+    private List<Servico> servicos; 
 
     public Profissional(Long id, String nome, String especialidade, double comissao) {
         this.id = id;
         this.nome = nome;
         this.especialidade = especialidade;
         this.comissao = comissao;
-        this.servicos = new ArrayList<>(); // Inicializa a lista
+        this.servicos = new ArrayList<>(); 
     }
 
     // Getters
@@ -42,7 +42,7 @@ public class Profissional {
     // Método para adicionar um serviço à lista
     public void adicionarServico(Servico servico) {
         servicos.add(servico);
-        servico.adicionarProfissional(this); // Adiciona o profissional ao serviço também
+        servico.adicionarProfissional(this);
     }
 
     @Override
