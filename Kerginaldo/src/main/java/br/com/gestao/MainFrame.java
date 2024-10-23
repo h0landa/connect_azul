@@ -1,6 +1,7 @@
 package main.java.br.com.gestao;
 
 import javax.swing.*;
+import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,120 +14,276 @@ public class MainFrame extends JFrame {
     private JTextField nomeServicoField, valorServicoField;
     private List<Profissional> profissionais;
     private List<Servico> servicos;
-
+    
+    // Definindo cores do tema
+    private static final Color PRIMARY_COLOR = new Color(70, 130, 180); // Steel Blue
+    private static final Color SECONDARY_COLOR = new Color(176, 196, 222); // Light Steel Blue
+    private static final Color BACKGROUND_COLOR = new Color(240, 248, 255); // Alice Blue
+    private static final Color TEXT_COLOR = new Color(44, 62, 80); // Dark Blue Gray
+    
     public MainFrame() {
-        setTitle("Gestão de Profissionais e Serviços");
-        setSize(600, 400);
+        setTitle("Sistema de Gestão de Profissionais e Serviços");
+        setSize(900, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-
+        getContentPane().setBackground(BACKGROUND_COLOR);
+        
         profissionais = new ArrayList<>();
         servicos = new ArrayList<>();
-
+        
+        // Configurando o painel principal com margens
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BorderLayout(20, 20));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        mainPanel.setBackground(BACKGROUND_COLOR);
+        
+        // Configurando a área de texto
         textArea = new JTextArea();
         textArea.setEditable(false);
+        textArea.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        textArea.setBackground(Color.WHITE);
+        textArea.setForeground(TEXT_COLOR);
         JScrollPane scrollPane = new JScrollPane(textArea);
-
-        // Painel para cadastro de profissionais
-        JPanel profissionalPanel = new JPanel();
-        profissionalPanel.setLayout(new GridLayout(5, 2));
-        profissionalPanel.add(new JLabel("Nome:"));
-        nomeField = new JTextField();
-        profissionalPanel.add(nomeField);
+        scrollPane.setPreferredSize(new Dimension(300, 0));
+        scrollPane.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createEmptyBorder(0, 10, 0, 0),
+            BorderFactory.createLineBorder(SECONDARY_COLOR)
+        ));
         
-        profissionalPanel.add(new JLabel("Especialidade:"));
-        especialidadeField = new JTextField();
-        profissionalPanel.add(especialidadeField);
+        // Painel para formulários
+        JPanel formsPanel = new JPanel(new GridLayout(2, 1, 0, 20));
+        formsPanel.setBackground(BACKGROUND_COLOR);
         
-        profissionalPanel.add(new JLabel("Comissão (%):"));
-        comissaoField = new JTextField();
-        profissionalPanel.add(comissaoField);
+        // Painel de profissionais
+        JPanel profissionalPanel = createProfissionalPanel();
         
-        JButton cadastrarProfissionalButton = new JButton("Cadastrar Profissional");
-        cadastrarProfissionalButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                cadastrarProfissional();
+        // Painel de serviços
+        JPanel servicoPanel = createServicoPanel();
+        
+        formsPanel.add(profissionalPanel);
+        formsPanel.add(servicoPanel);
+        
+        // Botão de listar
+        JButton listarButton = createStyledButton("Listar Profissionais e Serviços");
+        listarButton.addActionListener(e -> listar());
+        
+        // Montando o layout
+        mainPanel.add(formsPanel, BorderLayout.CENTER);
+        mainPanel.add(scrollPane, BorderLayout.EAST);
+        mainPanel.add(listarButton, BorderLayout.SOUTH);
+        
+        add(mainPanel);
+    }
+    
+    private JPanel createProfissionalPanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(PRIMARY_COLOR),
+                "Cadastro de Profissional",
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font("Segoe UI", Font.BOLD, 14),
+                PRIMARY_COLOR
+            ),
+            BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        ));
+        
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(5, 5, 5, 5);
+        
+        // Nome
+        addFormField(panel, "Nome:", nomeField = createStyledTextField(), gbc, 0);
+        
+        // Especialidade
+        addFormField(panel, "Especialidade:", especialidadeField = createStyledTextField(), gbc, 1);
+        
+        // Comissão
+        addFormField(panel, "Comissão (%):", comissaoField = createStyledTextField(), gbc, 2);
+        
+        // Botão
+        gbc.gridy = 3;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        JButton cadastrarButton = createStyledButton("Cadastrar Profissional");
+        cadastrarButton.addActionListener(e -> cadastrarProfissional());
+        panel.add(cadastrarButton, gbc);
+        
+        return panel;
+    }
+    
+    private JPanel createServicoPanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(PRIMARY_COLOR),
+                "Cadastro de Serviço",
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font("Segoe UI", Font.BOLD, 14),
+                PRIMARY_COLOR
+            ),
+            BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        ));
+        
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(5, 5, 5, 5);
+        
+        // Nome do Serviço
+        addFormField(panel, "Nome do Serviço:", nomeServicoField = createStyledTextField(), gbc, 0);
+        
+        // Valor do Serviço
+        addFormField(panel, "Valor do Serviço:", valorServicoField = createStyledTextField(), gbc, 1);
+        
+        // Botão
+        gbc.gridy = 2;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        JButton cadastrarButton = createStyledButton("Cadastrar Serviço");
+        cadastrarButton.addActionListener(e -> cadastrarServico());
+        panel.add(cadastrarButton, gbc);
+        
+        return panel;
+    }
+    
+    private void addFormField(JPanel panel, String label, JComponent field, GridBagConstraints gbc, int row) {
+        gbc.gridy = row;
+        gbc.gridx = 0;
+        gbc.gridwidth = 1;
+        gbc.weightx = 0.3;
+        panel.add(new JLabel(label), gbc);
+        
+        gbc.gridx = 1;
+        gbc.weightx = 0.7;
+        panel.add(field, gbc);
+    }
+    
+    private JTextField createStyledTextField() {
+        JTextField field = new JTextField();
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        field.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(SECONDARY_COLOR),
+            BorderFactory.createEmptyBorder(5, 5, 5, 5)
+        ));
+        return field;
+    }
+    
+    private JButton createStyledButton(String text) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        button.setForeground(Color.WHITE);
+        button.setBackground(PRIMARY_COLOR);
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        button.setOpaque(true);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                button.setBackground(PRIMARY_COLOR.darker());
+            }
+            
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                button.setBackground(PRIMARY_COLOR);
             }
         });
-        profissionalPanel.add(cadastrarProfissionalButton);
-
-        // Painel para cadastro de serviços
-        JPanel servicoPanel = new JPanel();
-        servicoPanel.setLayout(new GridLayout(4, 2));
-        servicoPanel.add(new JLabel("Nome do Serviço:"));
-        nomeServicoField = new JTextField();
-        servicoPanel.add(nomeServicoField);
-        
-        servicoPanel.add(new JLabel("Valor do Serviço:"));
-        valorServicoField = new JTextField();
-        servicoPanel.add(valorServicoField);
-        
-        JButton cadastrarServicoButton = new JButton("Cadastrar Serviço");
-        cadastrarServicoButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                cadastrarServico();
-            }
-        });
-        servicoPanel.add(cadastrarServicoButton);
-
-        // Botão para listar profissionais e serviços
-        JButton listarButton = new JButton("Listar Profissionais e Serviços");
-        listarButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                listar();
-            }
-        });
-
-        // Adicionando os painéis e a área de texto à janela
-        add(profissionalPanel, BorderLayout.NORTH);
-        add(servicoPanel, BorderLayout.CENTER);
-        add(listarButton, BorderLayout.SOUTH);
-        add(scrollPane, BorderLayout.EAST);
+        return button;
     }
 
     private void cadastrarProfissional() {
-        String nome = nomeField.getText();
-        String especialidade = especialidadeField.getText();
-        double comissao;
+        String nome = nomeField.getText().trim();
+        String especialidade = especialidadeField.getText().trim();
+        
+        if (nome.isEmpty() || especialidade.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                "Por favor, preencha todos os campos.",
+                "Campos Vazios",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
 
         try {
-            comissao = Double.parseDouble(comissaoField.getText());
-            Profissional profissional = new Profissional((long) (profissionais.size() + 1), nome, especialidade, comissao);
+            double comissao = Double.parseDouble(comissaoField.getText().trim());
+            if (comissao < 0 || comissao > 100) {
+                throw new NumberFormatException();
+            }
+            
+            Profissional profissional = new Profissional(
+                (long) (profissionais.size() + 1),
+                nome,
+                especialidade,
+                comissao
+            );
             profissionais.add(profissional);
-            textArea.append("Profissional cadastrado: " + profissional + "\n");
+            textArea.append("✓ Profissional cadastrado com sucesso:\n" + profissional + "\n\n");
             clearProfissionalFields();
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Por favor, insira um valor válido para a comissão.");
+            JOptionPane.showMessageDialog(this,
+                "Por favor, insira uma comissão válida entre 0 e 100.",
+                "Valor Inválido",
+                JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void cadastrarServico() {
-        String nomeServico = nomeServicoField.getText();
-        double valorServico;
+        String nomeServico = nomeServicoField.getText().trim();
+        
+        if (nomeServico.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                "Por favor, preencha o nome do serviço.",
+                "Campo Vazio",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
 
         try {
-            valorServico = Double.parseDouble(valorServicoField.getText());
-            Servico servico = new Servico((long) (servicos.size() + 1), nomeServico, valorServico);
+            double valorServico = Double.parseDouble(valorServicoField.getText().trim());
+            if (valorServico <= 0) {
+                throw new NumberFormatException();
+            }
+            
+            Servico servico = new Servico(
+                (long) (servicos.size() + 1),
+                nomeServico,
+                valorServico
+            );
             servicos.add(servico);
-            textArea.append("Serviço cadastrado: " + servico + "\n");
+            textArea.append("✓ Serviço cadastrado com sucesso:\n" + servico + "\n\n");
             clearServicoFields();
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Por favor, insira um valor válido para o valor do serviço.");
+            JOptionPane.showMessageDialog(this,
+                "Por favor, insira um valor válido maior que zero.",
+                "Valor Inválido",
+                JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void listar() {
-        textArea.append("\n--- Profissionais Cadastrados ---\n");
-        for (Profissional p : profissionais) {
-            textArea.append(p + "\n");
+        textArea.setText("");  // Limpa o texto anterior
+        
+        textArea.append("📋 PROFISSIONAIS CADASTRADOS\n");
+        textArea.append("_________________________________\n\n");
+        if (profissionais.isEmpty()) {
+            textArea.append("Nenhum profissional cadastrado.\n");
+        } else {
+            for (Profissional p : profissionais) {
+                textArea.append(p + "\n");
+            }
         }
 
-        textArea.append("\n--- Serviços Cadastrados ---\n");
-        for (Servico s : servicos) {
-            textArea.append(s + "\n");
+        textArea.append("\n📋 SERVIÇOS CADASTRADOS\n");
+        textArea.append("_________________________________\n\n");
+        if (servicos.isEmpty()) {
+            textArea.append("Nenhum serviço cadastrado.\n");
+        } else {
+            for (Servico s : servicos) {
+                textArea.append(s + "\n");
+            }
         }
     }
 
@@ -134,14 +291,22 @@ public class MainFrame extends JFrame {
         nomeField.setText("");
         especialidadeField.setText("");
         comissaoField.setText("");
+        nomeField.requestFocus();
     }
 
     private void clearServicoFields() {
         nomeServicoField.setText("");
         valorServicoField.setText("");
+        nomeServicoField.requestFocus();
     }
 
     public static void main(String[] args) {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
         SwingUtilities.invokeLater(() -> {
             MainFrame frame = new MainFrame();
             frame.setVisible(true);
