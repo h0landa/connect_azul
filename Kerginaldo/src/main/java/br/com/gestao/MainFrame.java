@@ -232,7 +232,7 @@ public class MainFrame extends JFrame {
 
     private void cadastrarServico() {
         String nomeServico = nomeServicoField.getText().trim();
-        
+
         if (nomeServico.isEmpty()) {
             JOptionPane.showMessageDialog(this,
                 "Por favor, preencha o nome do serviço.",
@@ -246,12 +246,42 @@ public class MainFrame extends JFrame {
             if (valorServico <= 0) {
                 throw new NumberFormatException();
             }
-            
+
             Servico servico = new Servico(
                 (long) (servicos.size() + 1),
                 nomeServico,
                 valorServico
             );
+
+            // Seleção de Profissional
+            String[] nomesProfissionais = profissionais.stream()
+                .map(Profissional::getNome)
+                .toArray(String[]::new);
+
+            if (nomesProfissionais.length > 0) {
+                String selecionado = (String) JOptionPane.showInputDialog(
+                    this,
+                    "Selecione um profissional:",
+                    "Seleção de Profissional",
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    nomesProfissionais,
+                    nomesProfissionais[0]
+                );
+
+                if (selecionado != null) {
+                    // Encontra o profissional selecionado pelo nome
+                    Profissional profissionalSelecionado = profissionais.stream()
+                        .filter(p -> p.getNome().equals(selecionado))
+                        .findFirst()
+                        .orElse(null);
+                    
+                    if (profissionalSelecionado != null) {
+                        servico.adicionarProfissional(profissionalSelecionado);
+                    }
+                }
+            }
+
             servicos.add(servico);
             textArea.append("✓ Serviço cadastrado com sucesso:\n" + servico + "\n\n");
             clearServicoFields();
@@ -264,25 +294,21 @@ public class MainFrame extends JFrame {
     }
 
     private void listar() {
-        textArea.setText("");  // Limpa o texto anterior
-        
-        textArea.append("📋 PROFISSIONAIS CADASTRADOS\n");
-        textArea.append("_________________________________\n\n");
+        textArea.setText("");
         if (profissionais.isEmpty()) {
             textArea.append("Nenhum profissional cadastrado.\n");
         } else {
+            textArea.append("Profissionais Cadastrados:\n");
             for (Profissional p : profissionais) {
-                textArea.append(p + "\n");
+                textArea.append(p.toString() + "\n");
             }
         }
-
-        textArea.append("\n📋 SERVIÇOS CADASTRADOS\n");
-        textArea.append("_________________________________\n\n");
         if (servicos.isEmpty()) {
             textArea.append("Nenhum serviço cadastrado.\n");
         } else {
+            textArea.append("Serviços Cadastrados:\n");
             for (Servico s : servicos) {
-                textArea.append(s + "\n");
+                textArea.append(s.toString() + "\n");
             }
         }
     }
@@ -291,22 +317,14 @@ public class MainFrame extends JFrame {
         nomeField.setText("");
         especialidadeField.setText("");
         comissaoField.setText("");
-        nomeField.requestFocus();
     }
 
     private void clearServicoFields() {
         nomeServicoField.setText("");
         valorServicoField.setText("");
-        nomeServicoField.requestFocus();
     }
 
     public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
         SwingUtilities.invokeLater(() -> {
             MainFrame frame = new MainFrame();
             frame.setVisible(true);
